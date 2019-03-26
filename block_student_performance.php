@@ -15,14 +15,18 @@ class block_student_performance extends block_base {
         }
 
         $this->page->requires->jquery();
-        $this->page->requires->js("/blocks/student_performance/gauge.min.js");
-        $this->page->requires->js("/blocks/student_performance/gauge.js");
+        $this->page->requires->js("/blocks/student_performance/js/gauge.min.js");
+        $this->page->requires->js("/blocks/student_performance/js/gauge.js");
 
         $valueId = block_student_performance_set_random_data();
         $value = block_student_performance_get_value($valueId);
 
         $this->content         =  new stdClass;
-        $this->content->text   = '<canvas id="gauge"></canvas>';
+        $this->content->text   = html_writer::tag(
+            'canvas',
+            '', 
+            array('id' => 'gauge', 'data-perf' => $value)
+        );
         $this->content->footer = '';
      
         return $this->content;

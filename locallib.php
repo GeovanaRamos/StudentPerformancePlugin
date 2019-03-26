@@ -14,5 +14,7 @@ function block_student_performance_set_random_data() {
 function block_student_performance_get_value($id){
     global $DB;
 
-    return $DB->get_record('block_student_performance', ['id' => $id]);
+    $record = $DB->get_record('block_student_performance', ['id' => $id]);
+
+    return $record->value;
 }
