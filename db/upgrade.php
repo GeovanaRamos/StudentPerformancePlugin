@@ -4,7 +4,7 @@ function xmldb_block_student_performance_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
 
-    if ($oldversion <= 2019032612) {
+    if ($oldversion <= 2019032614) {
 
         // Define table block_student_performance to be created.
         $table = new xmldb_table('block_student_performance');
@@ -22,7 +22,7 @@ function xmldb_block_student_performance_upgrade($oldversion) {
         }
 
         // Savepoint reached.
-        upgrade_block_savepoint(true, 2019032612, 'student_performance');
+        upgrade_block_savepoint(true, 2019032614, 'student_performance');
     
     }
 
