@@ -7,10 +7,12 @@ class block_student_performance extends block_base {
     
     public function get_content() {
         global $CFG;
-        require_once($CFG->dirroot . '/blocks/student_performance/locallib.php');
-     
+        global $COURSE;
 
-        if ($this->content !== null) {
+        require_once($CFG->dirroot . '/blocks/student_performance/locallib.php');
+
+        // Hide the block to non-logged in users and guests 
+        if ($this->content !== null || !isloggedin() || isguestuser()) {
           return $this->content;
         }
 
@@ -18,14 +20,17 @@ class block_student_performance extends block_base {
         $this->page->requires->js("/blocks/student_performance/js/gauge.min.js");
         $this->page->requires->js("/blocks/student_performance/js/gauge.js");
 
-        $valueId = block_student_performance_set_random_data();
-        $value = block_student_performance_get_value($valueId);
+        $courseid = $COURSE->id;
+        $gradeitems = block_student_performance_get_grade_items($courseid);
+
+        //$valueId = block_student_performance_set_random_data();
+        //$value = block_student_performance_get_value($valueId);
 
         $this->content         =  new stdClass;
         $this->content->text   = html_writer::tag(
             'canvas',
             '', 
-            array('id' => 'gauge', 'data-perf' => $value)
+            array('id' => 'gauge', 'data-perf' => $gradeitems)
         );
         $this->content->footer = '';
      

@@ -18,3 +18,13 @@ function block_student_performance_get_value($id){
 
     return $record->value;
 }
+
+function block_student_performance_get_grade_items($courseid){
+    global $DB;
+
+    $sql = "SELECT COUNT(*) FROM {grade_items} WHERE courseid=? AND itemtype!='course'";
+
+    $count = $DB->count_records_sql($sql, [$courseid]);
+
+    return $count;
+}
