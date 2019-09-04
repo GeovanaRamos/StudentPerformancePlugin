@@ -8,6 +8,7 @@ class block_student_performance extends block_base {
     public function get_content() {
         global $CFG;
         global $COURSE;
+        global $USER;
 
         require_once($CFG->dirroot . '/blocks/student_performance/locallib.php');
 
@@ -20,17 +21,14 @@ class block_student_performance extends block_base {
         $this->page->requires->js("/blocks/student_performance/js/gauge.min.js");
         $this->page->requires->js("/blocks/student_performance/js/gauge.js");
 
-        $courseid = $COURSE->id;
-        $gradeitems = block_student_performance_get_grade_items($courseid);
-
-        //$valueId = block_student_performance_set_random_data();
-        //$value = block_student_performance_get_value($valueId);
+        $gradeitems = block_student_performance_get_grade_items($COURSE->id);
+        $itemscompleted = block_student_performance_get_items_completed($COURSE->id, $USER->id);
 
         $this->content         =  new stdClass;
         $this->content->text   = html_writer::tag(
             'canvas',
             '', 
-            array('id' => 'gauge', 'data-perf' => $gradeitems)
+            array('id' => 'gauge', 'data-perf' => $itemscompleted*10/(float)$gradeitems)
         );
         $this->content->footer = '';
      
