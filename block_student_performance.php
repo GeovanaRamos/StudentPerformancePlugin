@@ -13,7 +13,7 @@ class block_student_performance extends block_base {
         require_once($CFG->dirroot . '/blocks/student_performance/locallib.php');
 
         // Hide the block to non-logged in users and guests
-        if ($this->content !== null || !isloggedin() || isguestuser()) {
+        if ($this->content !== null || !isloggedin() || isguestuser() || !is_enrolled()) {
           return $this->content;
         }
 
