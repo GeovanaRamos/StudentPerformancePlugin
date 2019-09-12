@@ -19,7 +19,7 @@ function block_student_performance_get_performance_factor($courseid, $userid){
     $gradeitems = block_student_performance_get_grade_items($courseid);
 
     // Variables for performance factor calculation
-    $itemsperday = $gradeitems / (float)ceil($enrolinfo->enrolperiod / 86400);
+    $itemsperday = $gradeitems / (float)ceil(($enrolinfo->timeend-$enrolinfo->timestart) / 86400);
     $timeenrolled = time() - $enrolinfo->timestart;
     $completedperday = $itemscompleted / (float)ceil($timeenrolled / 86400);
 
