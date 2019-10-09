@@ -1,13 +1,36 @@
 <?php
 
 function block_student_performance_get_performance_factor($courseid, $userid){
+    $gradefactor = block_student_performance_get_grade_factor($courseid, $userid);
+    $enrolmentfactor = block_student_performance_get_enrolment_factor($courseid, $userid);
+
+    return $gradefactor*0.5 + $enrolmentfactor*0.5;
+}
+
+function block_student_performance_get_grade_factor($courseid, $userid){
+    /*
+      Factor(F) is given by:
+
+      F =  CG * 10 / TG
+
+      CG = (Current final grade / Days of enrolment)
+      TG = (Max final grade / Course duration in days)
+
+    */
+
+    // TODO
+
+    return 0;
+}
+
+function block_student_performance_get_enrolment_factor($courseid, $userid){
     /*
       Factor(F) is given by:
 
       F =  AC * 10 / AT
 
       AC = (Activities completed by student / Days of enrolment)
-      AT = (Total gradable activities / Course duration in days)
+      TA = (Total gradable activities / Course duration in days)
 
     */
 
