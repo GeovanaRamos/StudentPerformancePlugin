@@ -10,6 +10,19 @@ function block_student_performance_get_performance_factor($courseid, $userid){
     return $gradefactor*0.5 + $activitiesfactor*0.5;
 }
 
+function block_student_performance_get_enrol_info($courseid, $userid){
+    global $DB;
+
+    $sql = "SELECT ue.timestart, ue.timeend, e.enrolperiod
+           FROM {user_enrolments} ue, {enrol} e
+           WHERE ue.userid=? AND ue.enrolid=e.id AND e.courseid=?";
+
+    $enrolinfo = $DB->get_record_sql($sql, [$userid, $courseid]);
+
+    return $enrolinfo;
+
+}
+
 function block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo){
     /*
       Factor(F) is given by:
@@ -21,9 +34,18 @@ function block_student_performance_get_grades_factor($courseid, $userid, $enroli
 
     */
 
-    // TODO
+    // Grades sum
+    $maxgrade = block_student_performance_get_max_grade();
+    $currentgrade = block_student_performance_get_current_grade();
 
-    return 0;
+    // Grades factor variables calculation
+    $maxperday = $currentgrade / block_student_performance_get_course_duration($enrolinfo);
+    $currentperday = $currentgrade / block_student_performance_get_days_enrolled($enrolinfo);
+
+    // Grades factor formula
+    $factor = $currentperday * 10 / $maxperday;
+
+    return $factor;
 }
 
 function block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo){
@@ -41,7 +63,7 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
     $items = block_student_performance_get_grade_items($courseid);
     $itemscompleted = block_student_performance_get_items_completed($courseid, $userid);
 
-    // Variables for enrolment factor calculation
+    // Enrolment factor variables calculation
     $itemsperday = $items / block_student_performance_get_course_duration($enrolinfo);
     $completedperday = $itemscompleted / block_student_performance_get_days_enrolled($enrolinfo);
 
@@ -50,6 +72,16 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
 
     return $factor;
 
+}
+
+function block_student_performance_get_max_grade(){
+    // TODO
+    return 1;
+}
+
+function block_student_performance_get_current_grade(){
+    // TODO
+    return 1;
 }
 
 function block_student_performance_get_grade_items($courseid){
@@ -75,19 +107,6 @@ function block_student_performance_get_items_completed($courseid, $userid){
     $count = $DB->count_records_sql($sql, [$courseid, $userid]);
 
     return $count;
-}
-
-function block_student_performance_get_enrol_info($courseid, $userid){
-    global $DB;
-
-    $sql = "SELECT ue.timestart, ue.timeend, e.enrolperiod
-           FROM {user_enrolments} ue, {enrol} e
-           WHERE ue.userid=? AND ue.enrolid=e.id AND e.courseid=?";
-
-    $enrolinfo = $DB->get_record_sql($sql, [$userid, $courseid]);
-
-    return $enrolinfo;
-
 }
 
 function block_student_performance_get_days_enrolled($enrolinfo){
