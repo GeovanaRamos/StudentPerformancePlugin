@@ -1,13 +1,16 @@
 <?php
 
 function block_student_performance_get_performance_factor($courseid, $userid){
-    $gradefactor = block_student_performance_get_grade_factor($courseid, $userid);
-    $enrolmentfactor = block_student_performance_get_enrolment_factor($courseid, $userid);
 
-    return $gradefactor*0.5 + $enrolmentfactor*0.5;
+    $enrolinfo = block_student_performance_get_enrol_info($courseid, $userid);
+
+    $gradefactor = block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo);
+    $activitiesfactor = block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo);
+
+    return $gradefactor*0.5 + $activitiesfactor*0.5;
 }
 
-function block_student_performance_get_grade_factor($courseid, $userid){
+function block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo){
     /*
       Factor(F) is given by:
 
@@ -23,7 +26,7 @@ function block_student_performance_get_grade_factor($courseid, $userid){
     return 0;
 }
 
-function block_student_performance_get_enrolment_factor($courseid, $userid){
+function block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo){
     /*
       Factor(F) is given by:
 
@@ -34,19 +37,15 @@ function block_student_performance_get_enrolment_factor($courseid, $userid){
 
     */
 
-    // Enrolment duration informations
-    $enrolinfo = block_student_performance_get_enrol_info($courseid, $userid);
-
     // Gradable activities count
+    $items = block_student_performance_get_grade_items($courseid);
     $itemscompleted = block_student_performance_get_items_completed($courseid, $userid);
-    $gradeitems = block_student_performance_get_grade_items($courseid);
 
-    // Variables for performance factor calculation
-    $itemsperday = $gradeitems / (float)ceil(($enrolinfo->timeend-$enrolinfo->timestart) / 86400);
-    $timeenrolled = time() - $enrolinfo->timestart;
-    $completedperday = $itemscompleted / (float)ceil($timeenrolled / 86400);
+    // Variables for enrolment factor calculation
+    $itemsperday = $items / block_student_performance_get_course_duration($enrolinfo);
+    $completedperday = $itemscompleted / block_student_performance_get_days_enrolled($enrolinfo);
 
-    // Performance factor formula
+    // Enrolment factor formula
     $factor = $completedperday * 10 / (float)$itemsperday;
 
     return $factor;
@@ -89,4 +88,12 @@ function block_student_performance_get_enrol_info($courseid, $userid){
 
     return $enrolinfo;
 
+}
+
+function block_student_performance_get_days_enrolled($enrolinfo){
+    return (float) ceil(time() - $enrolinfo->timestart / 86400);
+}
+
+function block_student_performance_get_course_duration($enrolinfo){
+    return (float) ceil(($enrolinfo->timeend - $enrolinfo->timestart) / 86400);
 }
