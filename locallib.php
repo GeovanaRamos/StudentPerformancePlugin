@@ -43,7 +43,7 @@ function block_student_performance_get_grades_factor($courseid, $userid, $enroli
     $currentperday = $currentgrade / block_student_performance_get_days_enrolled($enrolinfo);
 
     // Grades factor formula
-    $factor = $currentperday * 10 / $maxperday;
+    $factor = $currentperday * 10 / (float)$maxperday;
 
     return $factor;
 }
@@ -80,9 +80,9 @@ function block_student_performance_get_max_grade($courseid){
     $sql = "SELECT grademax FROM {grade_items}
             WHERE courseid=? AND itemtype='course'";
 
-    $maxgrade = $DB->get_record_sql($sql, [$courseid]);
+    $coursegrade = $DB->get_record_sql($sql, [$courseid]);
 
-    return $maxgrade;
+    return $coursegrade->grademax;
 }
 
 function block_student_performance_get_current_grade($courseid, $userid){
@@ -91,16 +91,11 @@ function block_student_performance_get_current_grade($courseid, $userid){
     $sql = "SELECT g.finalgrade FROM {grade_items} i
             INNER JOIN {grade_grades} g ON i.id=g.itemid
             WHERE i.courseid=? AND g.userid=?
-            AND i.itemtype!='course'";
+            AND i.itemtype='course'";
 
-    $grades = $DB->get_records_sql($sql, [$courseid, $userid]);
+    $usergrade = $DB->get_record_sql($sql, [$courseid, $userid]);
 
-    $sum = 0;
-    foreach ($grades as $g) {
-        $sum += $g->finalgrade;
-    }
-
-    return $sum;
+    return $usergrade->finalgrade;
 }
 
 function block_student_performance_get_grade_items($courseid){
