@@ -2,7 +2,11 @@
 class block_student_performance extends block_base {
 
     public function init() {
-        $this->title = get_string('student_performance', 'block_student_performance');
+        $this->title = get_string('pluginname', 'block_student_performance');
+    }
+
+    public function applicable_formats() {
+        return array('course-view' => true, 'site' => false);
     }
 
     public function get_content() {
