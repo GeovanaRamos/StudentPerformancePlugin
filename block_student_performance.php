@@ -31,7 +31,11 @@ class block_student_performance extends block_base {
         $this->content->text   = html_writer::tag(
             'canvas',
             '',
-            array('id' => 'gauge', 'data-perf' => $performancefactor)
+            array(
+                'id' => 'gauge', 
+                'data-perf' => $performancefactor, 
+                'style' => 'max-width:200px;max-height:200px;'
+            )
         );
         $this->content->footer = '';
 

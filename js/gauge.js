@@ -2,8 +2,6 @@ require(['jquery'], function($) {
 
     var gauge = new RadialGauge({
         renderTo: 'gauge',
-        width: 200,
-        height: 200,
         minValue: 0,
         startAngle: 90,
         ticksAngle: 180,
