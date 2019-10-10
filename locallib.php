@@ -129,7 +129,7 @@ function block_student_performance_get_items_completed($courseid, $userid){
 }
 
 function block_student_performance_get_days_enrolled($enrolinfo){
-    return (float) ceil(time() - $enrolinfo->timestart / 86400);
+    return (float) ceil((time() - $enrolinfo->timestart) / 86400);
 }
 
 function block_student_performance_get_course_duration($enrolinfo){
