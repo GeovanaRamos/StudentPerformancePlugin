@@ -7,7 +7,7 @@ function block_student_performance_get_performance_factor($courseid, $userid){
     $activitiesfactor = block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo);
     $courseaverage = block_student_performance_get_course_average_factor($courseid, $userid, $enrolinfo->timestart);
 
-    return $activitiesfactor*0.8 + $courseaverage*0.2;
+    return $activitiesfactor*0.9 + $courseaverage*0.1;
 }
 
 function block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo){
@@ -51,8 +51,8 @@ function block_student_performance_get_course_average_factor($courseid, $userid,
 
     // Average factor formula 
     $difference = $currentgrade - $courseaverage;
-    if ($difference <= 0){
-        return 0;
+    if ($difference >= 0){
+        return 10;
     } else {
         return ($difference * 10 / $currentgrade);
     }
