@@ -6,8 +6,9 @@ function block_student_performance_get_performance_factor($courseid, $userid){
 
     $gradefactor = block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo);
     $activitiesfactor = block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo);
+    $courseaverage = block_student_performance_get_course_average($courseid, $userid);
 
-    return $gradefactor*0.5 + $activitiesfactor*0.5;
+    return $gradefactor*0.2 + $activitiesfactor*0.8 + $courseaverage*0.1;
 }
 
 function block_student_performance_get_enrol_info($courseid, $userid){
@@ -36,7 +37,7 @@ function block_student_performance_get_grades_factor($courseid, $userid, $enroli
 
     // Grades 
     $maxgrade = block_student_performance_get_max_grade($courseid);
-    $currentgrade = block_student_performance_get_current_grade();
+    $currentgrade = block_student_performance_get_current_grade($courseid, $userid);
 
     // Grades factor formula
     $factor = $currentgrade * 10 / (float)$maxgrade;
@@ -68,6 +69,48 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
 
     return $factor;
 
+}
+
+function block_student_performance_get_course_average_factor($courseid, $userid){
+    /*
+      Factor(F) is given by:
+      
+      F = 0 --> if student current final grade is less than or equal to course average
+      F = (CG - CA) * 10 / CA  --> else
+
+    */
+
+    // Grades
+    $currentgrade = block_student_performance_get_current_grade($courseid, $userid);
+    $courseaverage = block_student_performance_get_course_average($courseid, $userid);
+
+    // Average factor formula 
+    $difference = $currentgrade - $courseaverage;
+    if ($difference <= 0){
+        return 0;
+    } else {
+        return ($difference * 10 / $currentgrade);
+    }
+}
+
+function block_student_performance_get_course_average($courseid, $userid){
+    global $DB;
+
+    $sql = "SELECT g.finalgrade FROM mdl_grade_items i
+            INNER JOIN mdl_grade_grades g ON i.id=g.itemid
+            WHERE i.courseid=? AND i.itemtype='course' AND g.userid!=?";
+
+    $coursegrades = $DB->get_record_sql($sql, [$courseid, $userid]);
+
+    $sum = 0;
+    $count = 0;
+
+    foreach ($coursegrades as $g){
+        $sum += $g->finalgrade;
+        $count++;
+    }
+
+    return ($sum/(float)$count);
 }
 
 function block_student_performance_get_max_grade($courseid){
