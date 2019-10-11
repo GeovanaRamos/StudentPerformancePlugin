@@ -4,45 +4,10 @@ function block_student_performance_get_performance_factor($courseid, $userid){
 
     $enrolinfo = block_student_performance_get_enrol_info($courseid, $userid);
 
-    $gradefactor = block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo);
     $activitiesfactor = block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo);
-    $courseaverage = block_student_performance_get_course_average_factor($courseid, $userid);
+    $courseaverage = block_student_performance_get_course_average_factor($courseid, $userid, $enrolinfo->timestart);
 
-    return $gradefactor*0.2 + $activitiesfactor*0.8 + $courseaverage*0.1;
-}
-
-function block_student_performance_get_enrol_info($courseid, $userid){
-    global $DB;
-
-    $sql = "SELECT ue.timestart, ue.timeend, e.enrolperiod
-           FROM {user_enrolments} ue, {enrol} e
-           WHERE ue.userid=? AND ue.enrolid=e.id AND e.courseid=?";
-
-    $enrolinfo = $DB->get_record_sql($sql, [$userid, $courseid]);
-
-    return $enrolinfo;
-
-}
-
-function block_student_performance_get_grades_factor($courseid, $userid, $enrolinfo){
-    /*
-      Factor(F) is given by:
-
-      F =  CG * 10 / MG
-    
-      CG = Current final grade
-      MG = Course max final grade
-
-    */
-
-    // Grades 
-    $maxgrade = block_student_performance_get_max_grade($courseid);
-    $currentgrade = block_student_performance_get_current_grade($courseid, $userid);
-
-    // Grades factor formula
-    $factor = $currentgrade * 10 / (float)$maxgrade;
-
-    return $factor;
+    return $activitiesfactor*0.8 + $courseaverage*0.2;
 }
 
 function block_student_performance_get_activities_factor($courseid, $userid, $enrolinfo){
@@ -71,7 +36,7 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
 
 }
 
-function block_student_performance_get_course_average_factor($courseid, $userid){
+function block_student_performance_get_course_average_factor($courseid, $userid, $timestart){
     /*
       Factor(F) is given by:
       
@@ -82,7 +47,7 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
 
     // Grades
     $currentgrade = block_student_performance_get_current_grade($courseid, $userid);
-    $courseaverage = block_student_performance_get_course_average($courseid, $userid);
+    $courseaverage = block_student_performance_get_course_average($courseid, $userid, $timestart);
 
     // Average factor formula 
     $difference = $currentgrade - $courseaverage;
@@ -93,14 +58,17 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
     }
 }
 
-function block_student_performance_get_course_average($courseid, $userid){
+function block_student_performance_get_course_average($courseid, $userid, $timestart){
     global $DB;
 
-    $sql = "SELECT g.finalgrade FROM mdl_grade_items i
-            INNER JOIN mdl_grade_grades g ON i.id=g.itemid
-            WHERE i.courseid=? AND i.itemtype='course' AND g.userid!=?";
+    $sql = "SELECT g.finalgrade FROM {grade_items} i
+            INNER JOIN {grade_grades} g ON i.id=g.itemid
+            INNER JOIN {user_enrolments} ue ON g.userid=ue.userid
+            WHERE i.courseid=? AND i.itemtype='course' 
+            AND g.userid!=? AND ue.timestart=?
+            AND g.finalgrade IS NOT NULL";
 
-    $coursegrades = $DB->get_records_sql($sql, [$courseid, $userid]);
+    $coursegrades = $DB->get_records_sql($sql, [$courseid, $userid, $timestart]);
 
     $sum = 0;
     $count = 0;
@@ -111,17 +79,6 @@ function block_student_performance_get_course_average($courseid, $userid){
     }
 
     return ($sum/(float)$count);
-}
-
-function block_student_performance_get_max_grade($courseid){
-    global $DB;
-
-    $sql = "SELECT grademax FROM {grade_items}
-            WHERE courseid=? AND itemtype='course'";
-
-    $coursegrade = $DB->get_record_sql($sql, [$courseid]);
-
-    return $coursegrade->grademax;
 }
 
 function block_student_performance_get_current_grade($courseid, $userid){
@@ -141,7 +98,7 @@ function block_student_performance_get_grade_items($courseid){
     global $DB;
 
     $sql = "SELECT COUNT(*) FROM {grade_items}
-            WHERE courseid=? AND itemtype!='course'";
+            WHERE courseid=? AND itemtype='mod'";
 
     $count = $DB->count_records_sql($sql, [$courseid]);
 
@@ -155,11 +112,24 @@ function block_student_performance_get_items_completed($courseid, $userid){
             FROM {grade_items} i
             INNER JOIN {grade_grades} g ON i.id=g.itemid
             WHERE i.courseid=? AND g.userid=?
-            AND i.itemtype!='course' AND g.aggregationstatus='used'";
+            AND i.itemtype='mod' AND g.finalgrade IS NOT NULL";
 
     $count = $DB->count_records_sql($sql, [$courseid, $userid]);
 
     return $count;
+}
+
+function block_student_performance_get_enrol_info($courseid, $userid){
+    global $DB;
+
+    $sql = "SELECT ue.timestart, ue.timeend, e.enrolperiod
+           FROM {user_enrolments} ue, {enrol} e
+           WHERE ue.userid=? AND ue.enrolid=e.id AND e.courseid=?";
+
+    $enrolinfo = $DB->get_record_sql($sql, [$userid, $courseid]);
+
+    return $enrolinfo;
+
 }
 
 function block_student_performance_get_days_enrolled($enrolinfo){
