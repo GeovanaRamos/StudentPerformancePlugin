@@ -27,23 +27,19 @@ function block_student_performance_get_grades_factor($courseid, $userid, $enroli
     /*
       Factor(F) is given by:
 
-      F =  CG * 10 / TG
-
-      CG = (Current final grade / Days of enrolment)
-      TG = (Max final grade / Course duration in days)
+      F =  CG * 10 / MG
+    
+      CG = Current final grade
+      MG = Course max final grade
 
     */
 
-    // Grades sum
+    // Grades 
     $maxgrade = block_student_performance_get_max_grade($courseid);
     $currentgrade = block_student_performance_get_current_grade();
 
-    // Grades factor variables calculation
-    $maxperday = $currentgrade / block_student_performance_get_course_duration($enrolinfo);
-    $currentperday = $currentgrade / block_student_performance_get_days_enrolled($enrolinfo);
-
     // Grades factor formula
-    $factor = $currentperday * 10 / (float)$maxperday;
+    $factor = $currentgrade * 10 / (float)$maxgrade;
 
     return $factor;
 }
