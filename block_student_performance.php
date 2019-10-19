@@ -30,7 +30,7 @@ class block_student_performance extends block_base {
         $enrolinfo = block_student_performance_get_enrol_info($COURSE->id, $USER->id);
 
         $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id, $enrolinfo);
-        $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id, $enrolinfo->timestart);
+        $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id);
         $performancefactor = $activitiesfactor*0.9 + $courseaverage*0.1;
 
         $feedback = block_student_performance_get_feedback($performancefactor, $activitiesfactor, $courseaverage);
