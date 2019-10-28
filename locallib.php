@@ -17,9 +17,9 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
 	$diffpercentage = array();
 
 	foreach($usergrades as $index => $usergrade){
-		$grade = $usergrade[$index]->finalgrade;
-		$itemid = $usergrade[$index]->itemid; 
-		$average = block_student_performance_get_course_average($courseid, $userid, $itemid);
+		$grade = $usergrade->finalgrade;
+		$itemid = $usergrade->itemid; 
+		$average = block_student_performance_get_activity_average($userid, $itemid);
 
 		$diffpercentage[$index] = ($grade - $average) / (float)$average;
 
@@ -35,13 +35,15 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
    
 }
 
-function block_student_performance_get_course_average($courseid, $userid, $itemid){
+function block_student_performance_get_activity_average($userid, $itemid){
 	global $DB;
 
-	$sql = "SELECT AVG(finalgrade) FROM {grade_grades} g , {grade_items} i 
+	$sql = "SELECT AVG(finalgrade) AS average FROM {grade_grades} g , {grade_items} i 
 			WHERE g.itemid=? AND g.userid!=?";
 	
-	return $DB->get_records_sql($sql, [$courseid, $userid]);
+	$record = $DB->get_record_sql($sql, [$itemid, $userid]);
+
+	return $record->average;
 }
 
 function block_student_performance_get_user_grades($courseid, $userid){
@@ -49,7 +51,8 @@ function block_student_performance_get_user_grades($courseid, $userid){
 
     $sql = "SELECT g.finalgrade, itemid	FROM {grade_items} i
             INNER JOIN {grade_grades} g ON i.id=g.itemid
-            WHERE i.courseid=? AND g.userid=? AND i.itemtype='mod'";
+            WHERE i.courseid=? AND g.userid=? AND i.itemtype='mod'
+             AND g.finalgrade IS NOT NULL";
 
     return $DB->get_records_sql($sql, [$courseid, $userid]);
 }
