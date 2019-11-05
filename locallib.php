@@ -4,46 +4,49 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
     /*
       Factor(F) is given by:
 
-      F = 10 			--> if student DP >= 0
+    F = 10 			--> if student DP >= 0
 	  F = DA * 10  		--> else
-	  
-	  DA = SUM(DP) / COUNT(DP)
+
+	  DA = SUM(DPn) / COUNT(DP)
 	  DPn = (Student grade on activity n - Average on activity n) / Average on activity n
 
     */
 
-	$usergrades = block_student_performance_get_user_grades($courseid, $userid);
+		$usergrades = block_student_performance_get_user_grades($courseid, $userid);
 
-	$diffpercentage = array();
+		$diffpercentage = array();
 
-	foreach($usergrades as $index => $usergrade){
-		$grade = $usergrade->finalgrade;
-		$itemid = $usergrade->itemid; 
-		$average = block_student_performance_get_activity_average($userid, $itemid);
+		foreach($usergrades as $index => $usergrade){
+				$grade = $usergrade->finalgrade;
+				$itemid = $usergrade->itemid;
+				$average = block_student_performance_get_activity_average($userid, $itemid);
 
-		$diffpercentage[$index] = ($grade - $average) / (float)$average;
+				if ($average == 0)
+					$diffpercentage[$index] = 0;
+				else
+					$diffpercentage[$index] = ($grade - $average) / (float)$average;
+		}
 
-	}
+		if (count($diffpercentage) == 0)
+				return 10;
+		else
+				$diffaverage = array_sum($diffpercentage)/ (float)count($diffpercentage);
 
-	$diffaverage = array_sum($diffpercentage)/ (float)count($diffpercentage);
-
-	if ($diffaverage >= 0){
-		return 10;
-	} else {
-		return $diffaverage * 10;	
-	}
-   
+		if ($diffaverage >= 0)
+				return 10;
+		else
+				return $diffaverage * 10;
 }
 
 function block_student_performance_get_activity_average($userid, $itemid){
-	global $DB;
+		global $DB;
 
-	$sql = "SELECT AVG(finalgrade) AS average FROM {grade_grades} g , {grade_items} i 
-			WHERE g.itemid=? AND g.userid!=?";
-	
-	$record = $DB->get_record_sql($sql, [$itemid, $userid]);
+		$sql = "SELECT AVG(finalgrade) AS average FROM {grade_grades} g , {grade_items} i
+				WHERE g.itemid=? AND g.userid!=?";
 
-	return $record->average;
+		$record = $DB->get_record_sql($sql, [$itemid, $userid]);
+
+		return $record->average;
 }
 
 function block_student_performance_get_user_grades($courseid, $userid){
@@ -52,7 +55,7 @@ function block_student_performance_get_user_grades($courseid, $userid){
     $sql = "SELECT g.finalgrade, itemid	FROM {grade_items} i
             INNER JOIN {grade_grades} g ON i.id=g.itemid
             WHERE i.courseid=? AND g.userid=? AND i.itemtype='mod'
-             AND g.finalgrade IS NOT NULL";
+            AND g.finalgrade IS NOT NULL";
 
     return $DB->get_records_sql($sql, [$courseid, $userid]);
 }
@@ -68,13 +71,17 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
 
     */
 
-    // Gradable activities count
     $items = block_student_performance_get_grade_items($courseid);
     $itemscompleted = block_student_performance_get_items_completed($courseid, $userid);
+		$courseduration = block_student_performance_get_course_duration($enrolinfo);
+		$daysenrolled = block_student_performance_get_days_enrolled($enrolinfo);
 
-    // Enrolment factor variables calculation
-    $itemsperday = $items / block_student_performance_get_course_duration($enrolinfo);
-    $completedperday = $itemscompleted / block_student_performance_get_days_enrolled($enrolinfo);
+		if($courseduration == 0 || $daysenrolled == 0)
+			  return 10;
+
+		// Enrolment factor variables calculation
+		$itemsperday = $items / $courseduration;
+	  $completedperday = $itemscompleted / $daysenrolled;
 
     // Enrolment factor formula
    	return $completedperday * 10 / (float)$itemsperday;
@@ -108,7 +115,7 @@ function block_student_performance_get_enrol_info($courseid, $userid){
            FROM {user_enrolments} ue, {enrol} e
            WHERE ue.userid=? AND ue.enrolid=e.id AND e.courseid=?";
 
-	return $DB->get_record_sql($sql, [$userid, $courseid]);
+		return $DB->get_record_sql($sql, [$userid, $courseid]);
 }
 
 function block_student_performance_get_days_enrolled($enrolinfo){
@@ -128,13 +135,13 @@ function block_student_performance_get_feedback($performancefactor, $activitiesf
     );
 
     $activities = array(
-      "low" => "Realize atividades com mais frequência",
-      "high" => "Continue com o bom ritmo de realização de atividades",
+      "low" => "Você realiza atividades com pouca frequência",
+      "high" => "Você possui um bom ritmo de realização de atividades",
     );
 
     $average = array(
-      "low" => "melhore suas notas nas atividades.",
-      "high" => "mantenha as boas notas nas atividades.",
+      "low" => "possui notas ruims em relação a turma.",
+      "high" => "possui boas notas em relação a turma.",
     );
 
     $fbperformance = block_student_performance_get_performance_feedback($performancefactor);
@@ -142,7 +149,7 @@ function block_student_performance_get_feedback($performancefactor, $activitiesf
     $fbaverage = block_student_performance_get_average_feedback($averagefactor);
     $conjunction = block_student_performance_get_conjunction($fbactivities, $fbaverage);
 
-    return $performance[$fbperformance] . $activities[$fbactivities] . $conjunction . $average[$fbaverage];
+    return $performance[$fbperformance].$activities[$fbactivities].$conjunction.$average[$fbaverage];
 
 }
 
