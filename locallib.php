@@ -2,7 +2,8 @@
 
 function block_student_performance_get_course_average_factor($courseid, $userid){
     /*
-      Factor(F) is given by:
+    
+    Factor(F) is given by:
 
     F = 10 			--> if student DP >= 0
 	  F = DA * 10  		--> else
@@ -12,30 +13,30 @@ function block_student_performance_get_course_average_factor($courseid, $userid)
 
     */
 
-		$usergrades = block_student_performance_get_user_grades($courseid, $userid);
+    $usergrades = block_student_performance_get_user_grades($courseid, $userid);
 
-		$diffpercentage = array();
+    $diffpercentage = array();
 
-		foreach($usergrades as $index => $usergrade){
-				$grade = $usergrade->finalgrade;
-				$itemid = $usergrade->itemid;
-				$average = block_student_performance_get_activity_average($userid, $itemid);
+    foreach($usergrades as $index => $usergrade){
+        $grade = $usergrade->finalgrade;
+        $itemid = $usergrade->itemid;
+        $average = block_student_performance_get_activity_average($userid, $itemid);
 
-				if ($average == 0)
-					$diffpercentage[$index] = 0;
-				else
-					$diffpercentage[$index] = ($grade - $average) / (float)$average;
-		}
+        if ($average == 0)
+            $diffpercentage[$index] = 0;
+        else
+            $diffpercentage[$index] = ($grade - $average) / (float)$average;
+    }
 
-		if (count($diffpercentage) == 0)
-				return 10;
-		else
-				$diffaverage = array_sum($diffpercentage)/ (float)count($diffpercentage);
+    if (count($diffpercentage) == 0)
+        return 10;
+    else
+        $diffaverage = array_sum($diffpercentage)/ (float)count($diffpercentage);
 
-		if ($diffaverage >= 0)
-				return 10;
-		else
-				return $diffaverage * 10;
+    if ($diffaverage >= 0)
+        return 10;
+    else
+        return $diffaverage * 10;
 }
 
 function block_student_performance_get_activity_average($userid, $itemid){
@@ -73,18 +74,23 @@ function block_student_performance_get_activities_factor($courseid, $userid, $en
 
     $items = block_student_performance_get_grade_items($courseid);
     $itemscompleted = block_student_performance_get_items_completed($courseid, $userid);
-		$courseduration = block_student_performance_get_course_duration($enrolinfo);
-		$daysenrolled = block_student_performance_get_days_enrolled($enrolinfo);
+	$courseduration = block_student_performance_get_course_duration($enrolinfo);
+	$daysenrolled = block_student_performance_get_days_enrolled($enrolinfo);
 
-		if($courseduration == 0 || $daysenrolled == 0)
-			  return 10;
+	if($courseduration == 0 || $daysenrolled == 0)
+		return 10;
 
-		// Enrolment factor variables calculation
-		$itemsperday = $items / $courseduration;
-	  $completedperday = $itemscompleted / $daysenrolled;
+    // Enrolment factor variables calculation
+    $itemsperday = $items / $courseduration;
+    $completedperday = $itemscompleted / $daysenrolled;
 
     // Enrolment factor formula
-   	return $completedperday * 10 / (float)$itemsperday;
+   	$factor = $completedperday * 10 / (float)$itemsperday;
+   	
+   	if ($factor < 10)
+   		return $factor;
+   	else
+   		return 10;
 
 }
 
@@ -126,59 +132,14 @@ function block_student_performance_get_course_duration($enrolinfo){
     return (float) ceil(($enrolinfo->timeend - $enrolinfo->timestart) / 86400);
 }
 
-function block_student_performance_get_feedback($performancefactor, $activitiesfactor, $averagefactor){
+function block_student_performance_get_feedback($activitiesfactor, $averagefactor){
 
-    $performance = array(
-      "low" => "Cuidado! ",
-      "regular" => "Atenção! ",
-      "high" => "Excelente! ",
-    );
-
-    $activities = array(
-      "low" => "Você realiza atividades com pouca frequência",
-      "high" => "Você possui um bom ritmo de realização de atividades",
-    );
-
-    $average = array(
-      "low" => "possui notas ruims em relação a turma.",
-      "high" => "possui boas notas em relação a turma.",
-    );
-
-    $fbperformance = block_student_performance_get_performance_feedback($performancefactor);
-    $fbactivities = block_student_performance_get_activities_feedback($activitiesfactor);
-    $fbaverage = block_student_performance_get_average_feedback($averagefactor);
-    $conjunction = block_student_performance_get_conjunction($fbactivities, $fbaverage);
-
-    return $performance[$fbperformance].$activities[$fbactivities].$conjunction.$average[$fbaverage];
-
-}
-
-function block_student_performance_get_performance_feedback($performancefactor){
-    if ($performancefactor < 4)
-      return "low";
-    else if ($performancefactor > 6)
-      return "high";
+    if ($activitiesfactor < 10 && $averagefactor < 0)
+        return "Atenção! Realize atividades com mais frequência e melhore suas médias nas atividades!";
+    else if ($activitiesfactor < 10)
+        return "Atenção! Realize atividades com mais frequência!" ;
+    else if ($averagefactor < 0)
+        return "Atenção! Melhore suas médias nas atividades";
     else
-      return "regular";
-}
-
-function block_student_performance_get_activities_feedback($activitiesfactor){
-    if ($activitiesfactor < 10 )
-      return "low";
-    else
-      return "high";
-}
-
-function block_student_performance_get_average_feedback($averagefactor){
-    if ($averagefactor < 0 )
-      return "low";
-    else
-      return "high";
-}
-
-function block_student_performance_get_conjunction($fbactivities, $fbaverage){
-    if($fbactivities == $fbaverage)
-        return " e ";
-    else
-        return ", entretanto ";
+        return "Continue assim!";
 }

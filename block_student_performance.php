@@ -33,7 +33,7 @@ class block_student_performance extends block_base {
         $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id);
         $performancefactor = $activitiesfactor*0.9 + $courseaverage*0.1;
 
-        $feedback = block_student_performance_get_feedback($performancefactor, $activitiesfactor, $courseaverage);
+        $feedback = block_student_performance_get_feedback($activitiesfactor, $courseaverage);
 
         // HTML
         $this->content         =  new stdClass;
@@ -44,7 +44,6 @@ class block_student_performance extends block_base {
             array(
                 'id' => 'gauge',
                 'data-perf' => $performancefactor,
-                'style' => 'max-width:200px;max-height:200px;'
             )
         );
         $this->content->text   .= html_writer::tag(

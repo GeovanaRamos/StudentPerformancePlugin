@@ -2,6 +2,7 @@ require(['jquery'], function($) {
 
     var gauge = new RadialGauge({
         renderTo: 'gauge',
+        height: 250,
         minValue: 0,
         startAngle: 90,
         ticksAngle: 180,
@@ -31,11 +32,11 @@ require(['jquery'], function($) {
             },
             {
                 "from": 4,
-                "to": 6,
+                "to": 7,
                 "color": "rgba(255,255,51)"
             },
             {
-                "from": 6,
+                "from": 7,
                 "to": 10,
                 "color": "rgba(50,205,50)"
             }
