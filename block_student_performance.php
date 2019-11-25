@@ -27,9 +27,7 @@ class block_student_performance extends block_base {
         $this->page->requires->js("/blocks/student_performance/js/gauge.js");
 
         // Calculation
-        $enrolinfo = block_student_performance_get_enrol_info($COURSE->id, $USER->id);
-
-        $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id, $enrolinfo);
+        $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id);
         $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id);
         $performancefactor = $activitiesfactor*0.9 + $courseaverage*0.1;
 
