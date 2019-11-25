@@ -27,12 +27,12 @@ require(['jquery'], function($) {
         highlights: [
             {
                 "from": 0,
-                "to": 4,
+                "to": 5,
                 "color": "rgba(200, 50, 50, .75)"
             },
             {
-                "from": 4,
-                "to": 7,
+                "from": 5,
+                "to": 8,
                 "color": "rgba(255,255,51)"
             },
             {

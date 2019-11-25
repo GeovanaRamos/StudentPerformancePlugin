@@ -29,7 +29,7 @@ class block_student_performance extends block_base {
         // Calculation
         $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id);
         $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id);
-        $performancefactor = $activitiesfactor*0.9 + $courseaverage*0.1;
+        $performancefactor = $activitiesfactor*0.7 + $courseaverage*0.3;
 
         $feedback = block_student_performance_get_feedback($activitiesfactor, $courseaverage);
 
