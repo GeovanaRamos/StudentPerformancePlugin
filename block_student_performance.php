@@ -23,8 +23,13 @@ class block_student_performance extends block_base {
 
         // JavaScript
         $this->page->requires->jquery();
-        $this->page->requires->js("/blocks/student_performance/js/gauge.min.js");
-        $this->page->requires->js("/blocks/student_performance/js/gauge.js");
+        // $this->page->requires->js("/blocks/student_performance/js/gauge.min.js");
+        // $this->page->requires->js("/blocks/student_performance/js/gauge.js");
+        $this->page->requires->js("/blocks/student_performance/js/chart-bundle.js");
+        $this->page->requires->js("/blocks/student_performance/js/chart-gauge.js");
+        $this->page->requires->js("/blocks/student_performance/js/chart-labels.js");
+        //$this->page->requires->js(new moodle_url('https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js'));
+        $this->page->requires->js("/blocks/student_performance/js/word-gauge.js");
 
         // Calculation
         $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id);
@@ -40,8 +45,10 @@ class block_student_performance extends block_base {
             'canvas',
             '',
             array(
-                'id' => 'gauge',
+                'id' => 'chart',
                 'data-perf' => $performancefactor,
+                'width'=>400,
+                'height'=>400
             )
         );
         $this->content->text   .= html_writer::tag(
