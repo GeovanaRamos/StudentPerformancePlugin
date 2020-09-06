@@ -34,7 +34,11 @@ class block_student_performance extends block_base {
         // Calculation
         $activitiesfactor = block_student_performance_get_activities_factor($COURSE->id, $USER->id);
         $courseaverage = block_student_performance_get_course_average_factor($COURSE->id, $USER->id);
-        $performancefactor = $activitiesfactor*0.7 + $courseaverage*0.3;
+
+        if($courseaverage >= 0)
+            $performancefactor = $activitiesfactor * 50;
+        else
+            $performancefactor = ($activitiesfactor - $courseaverage) * 50;
 
         $feedback = block_student_performance_get_feedback($activitiesfactor, $courseaverage);
 
@@ -48,7 +52,9 @@ class block_student_performance extends block_base {
                 'id' => 'chart',
                 'data-perf' => $performancefactor,
                 'width'=>400,
-                'height'=>400
+                'height'=>400,
+                'a'=> $activitiesfactor,
+                'n' => $courseaverage
             )
         );
         $this->content->text   .= html_writer::tag(

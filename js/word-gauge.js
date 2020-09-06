@@ -3,7 +3,7 @@ var config = {
   data: {
     labels: ['Ruim', 'Regular', 'Ótimo'],
     datasets: [{
-      data: [40,60, 100],
+      data: [50,60, 100],
       value: document.getElementById('chart').getAttribute('data-perf'),
       backgroundColor: ['red', 'yellow', 'green'],
       borderWidth: 2

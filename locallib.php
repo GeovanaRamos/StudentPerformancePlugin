@@ -1,16 +1,6 @@
 <?php
 
 function block_student_performance_get_course_average_factor($courseid, $userid){
-    
-    $diffaverage = block_student_performance_get_average_diff_from_gradepass($courseid, $userid);
-
-    if ($diffaverage >= 0.1)
-        return 10;
-    else
-        return $diffaverage * 10;
-}
-
-function block_student_performance_get_average_diff_from_gradepass($courseid, $userid){
 
     $usergrades = block_student_performance_get_user_grades($courseid, $userid);
     $diffpercentage = array(); 
@@ -22,9 +12,10 @@ function block_student_performance_get_average_diff_from_gradepass($courseid, $u
     }
 
     if (count($diffpercentage) == 0)
-        return 0.1;
-    else
-        return array_sum($diffpercentage)/ (float)count($diffpercentage);
+        return 0;
+    
+    return array_sum($diffpercentage)/ (float)count($diffpercentage);
+    
 }
 
 function block_student_performance_get_course_gradepass_percentage($courseid){
@@ -74,17 +65,12 @@ function block_student_performance_get_activities_factor($courseid, $userid){
 	$daysenrolled = block_student_performance_get_days_enrolled($enrolinfo);
 
 	if($courseduration == 0 || $daysenrolled == 0)
-		return 10;
+		return 1;
     
     $itemsperday = $items / $courseduration;
     $completedperday = $itemscompleted / $daysenrolled;
 
-   	$factor = $completedperday * 10 / (float)$itemsperday;
-   	
-   	if ($factor < 10)
-   		return $factor;
-   	else
-   		return 10;
+   	return $completedperday / (float)$itemsperday;
 
 }
 
@@ -128,9 +114,9 @@ function block_student_performance_get_course_duration($enrolinfo){
 
 function block_student_performance_get_feedback($activitiesfactor, $averagefactor){
 
-    if ($activitiesfactor < 10 && $averagefactor < 0)
+    if ($activitiesfactor < 100 && $averagefactor < 0)
         return "Atenção! Realize atividades com mais frequência e melhore suas notas nas atividades!";
-    else if ($activitiesfactor < 10)
+    else if ($activitiesfactor < 100)
         return "Atenção! Realize atividades com mais frequência!" ;
     else if ($averagefactor < 0)
         return "Atenção! Melhore suas notas nas atividades";
